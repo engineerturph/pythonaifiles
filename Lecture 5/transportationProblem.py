@@ -50,6 +50,22 @@ def backtrackingSearch(problem):
     return [best['cost'], best['history']]
 
 
+def dynamicProgramming(problem):
+    cache = {}
+
+    def futureCost(state):
+        if problem.isEnd(state):
+            return 0
+        if state in cache:
+            return cache[state]
+        for action, newState, cost in problem.succAndCost(state):
+            result = []
+            result.append(cost + futureCost(newState))#suan calismiyor burasi duzelt
+        cache[state] = min(result)
+
+    return (futureCost(problem.startState()), [])
+
+
 def printSolution(solution):
     totalCost, history = solution
     print('totalCost: {}', format(totalCost))
@@ -58,4 +74,4 @@ def printSolution(solution):
 
 
 problem = transportationProblem(N=1000)
-printSolution(backtrackingSearch(problem))
+printSolution(dynamicProgramming(problem))
