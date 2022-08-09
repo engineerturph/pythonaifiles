@@ -1,6 +1,36 @@
+import heapq
 import sys
 
 sys.setrecursionlimit(10000)
+
+
+class PriorityQueue:
+    def __init__(self):
+        self.DONE = -100000
+        self.heap = []
+        self.priorities = {}
+
+    # Insert |state| into the heap with priority |newPriority| if
+    # |state| isnt in the heap or |newPriority| is smaller than the existing
+    # priority.
+    # Return whether the priority queue was updated
+    def update(self, state, newPriority):
+        oldPriority = self.priorities.get(state)
+        if oldPriority == None or newPriority < oldPriority:
+            self.priorities[state] = newPriority
+            heapq.heappush(self.heap, (newPriority, state))
+            return True
+        return False
+
+    # Returns (state with min priority,priority)
+    # or (None,None) if priority queue is empty.
+    def removeMin(self):
+        while len(self.heap) > 0:
+            priority, state = heapq.heappop(self.heap)
+            if self.priorities[state] == self.DONE: continue
+            self.priorities[state] = self.DONE
+            return (state, priority)
+        return (None, None)
 
 
 class transportationProblem(object):
@@ -52,26 +82,44 @@ def backtrackingSearch(problem):
 
 def dynamicProgramming(problem):
     cache = {}
+    result2 = []
 
     def futureCost(state):
         if problem.isEnd(state):
             return 0
         if state in cache:
             return cache[state]
+        result2 = []
         for action, newState, cost in problem.succAndCost(state):
-            result = []
-            result.append(cost + futureCost(newState))#suan calismiyor burasi duzelt
-        cache[state] = min(result)
+            result2.append(cost + futureCost(newState))
+        result = min(result2)  # suan calismiyor burasi duzelt
+        cache[state] = result
+        return result
 
     return (futureCost(problem.startState()), [])
 
 
+def uniformCostSearch(prolem):
+    frontier = PriorityQueue()
+    frontier.update(problem.startState(), 0)
+    while True:
+        # Move from frontier to explored
+        state, pastCost = frontier.removeMin()
+        if problem.isEnd(state):
+            return (pastCost, [])
+        # Push out on the frontier
+        for action, newState, cost in problem.succAndCost(state):
+            frontier.update(newState, pastCost + cost)
+
+
 def printSolution(solution):
     totalCost, history = solution
-    print('totalCost: {}', format(totalCost))
+    print('totalCost:', format(totalCost))
     for item in history:
         print(item)
 
 
-problem = transportationProblem(N=1000)
+problem = transportationProblem(N=10)
+printSolution(backtrackingSearch(problem))
 printSolution(dynamicProgramming(problem))
+printSolution(uniformCostSearch(problem))
