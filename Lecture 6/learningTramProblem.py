@@ -137,7 +137,36 @@ def predict(N, weights):
     # Input (x): N (number of blocks)
     # Output (y): path (sequence of actions)
     problem = TransportationProblem(N, weights)
+    totalCost, history = dynamicProgramming(problem)
+    return [action for action, newState, cost in history]
 
 
 def generateExamples():
     trueWeights = {'walk': 1, 'tram': 2}
+    return [(N, predict(N, trueWeights)) for N in range(1, 30)]
+
+
+def structuredPerceptron(examples):
+    weights = {'walk': 0, 'tram': 0}
+    for t in range(100):
+        numMistakes = 0
+        for N, trueActions in examples:
+            # Make a prediction(calculate actions according to your weights)
+            predActions = predict(N, weights)
+            if predActions != trueActions:
+                numMistakes += 1
+            # Update weights
+            for action in trueActions:
+                weights[action] -= 1
+            for action in predActions:
+                weights[action] += 1
+        print('Iteration {}, numMistakes = {},weights = {}'.format(t, numMistakes, weights))
+        if numMistakes == 0:
+            break
+
+
+examples = generateExamples()
+print('Training dataset:')
+for example in examples:
+    print('', example)
+structuredPerceptron(examples)

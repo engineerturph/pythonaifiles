@@ -1,4 +1,4 @@
-PassengerId,Survived,Pclass,Surname,Name,Sex,Age,SibSp,Parch,Ticket,Fare,Cabin,Embarked
+PassengerId,Survived,Pclass,Name,Sex,Age,SibSp,Parch,Ticket,Fare,Cabin,Embarked
 751,1,2,"Wells, Miss. Joan",female,4,1,1,29103,23,,S
 752,1,3,"Moor, Master. Meier",male,6,0,1,392096,12.475,E121,S
 753,0,3,"Vande Velde, Mr. Johannes Joseph",male,33,0,0,345780,9.5,,S

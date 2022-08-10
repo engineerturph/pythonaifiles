@@ -1,38 +1,32 @@
-trainFile = open('train.csv', "r")
-testFile = open('test.csv', "r")
-valFile = open('validation.csv', 'r')
+import pandas as pd
 
-
-def makeFileDict(file, trainBool):
-    trainArray = file.read().split('\n')
-    trainDictArray = []
-    elArr = []
-    for i in range(len(trainArray)):
-        elArr.append(trainArray[i].split(','))
-    for i in range(len(trainArray) - 1):
-        dict = {}
-        if (i == 0):
-            i = i + 1
-        for j in range(12 if trainBool else 11):
-            dict[elArr[0][j]] = elArr[i][j]
-        trainDictArray.append(dict)
-    return trainDictArray
-
-
-testDict = makeFileDict(testFile, 0)
-trainDict = makeFileDict(trainFile, 1)
-valDict = makeFileDict(valFile, 1)
+trainDict = pd.read_csv('train.csv')
+testDict = pd.read_csv('test.csv')
+valDict = pd.read_csv('validation.csv')
 
 
 ###Modeling
 def dictToAttributes(dict):
     attributesArray = []
-    for data in dict:
+    for i in range(len(dict)):
         innerDict = {}
-        innerDict['Id'] = data['PassengerId']
-        innerDict['Survived'] = data['Survived']
+
+        innerDict['Id'] = dict.iloc[i]['PassengerId']
+        innerDict['Survived'] = dict.iloc[i]['Survived'] if dict.iloc[i]['Survived'] == 1 else -1
         innerDict['attributes'] = {}
-        innerDict['attributes']['is ' + data['Sex']] = 1
+        innerDict['attributes']['is ' + dict.iloc[i]['Sex']] = 1
+        age = dict.iloc[i]['Age']
+        if (pd.notna(age)):
+            if (age < 10 and age > 0):
+                innerDict['attributes']['isbaby'] = 1
+            elif (age < 15 and age > 10):
+                innerDict['attributes']['isyoung'] = 1
+            elif (age < 20 and age > 15):
+                innerDict['attributes']['isyoung2'] = 1
+            elif (age < 40 and age > 20):
+                innerDict['attributes']['isadult'] = 1
+            elif (age < 100 and age > 40):
+                innerDict['attributes']['isold'] = 1
         attributesArray.append(innerDict)
     return attributesArray
 
@@ -62,17 +56,34 @@ def sdF(y2, y, ycarpiX, nullVector):
     return ycarpiX if 1 - margin > 0 else nullVector
 
 
-def stocasticGradientDescent(attrs, sF, sdF):
+stepSize = 0.01
+
+
+def stocasticGradientDescent(attrs, sdF):
     w = {}
     nullVector = {}
+    totaldLoss = {}
+
     for attr in attrs:
         for attrName in attr['attributes']:
             w[attrName] = 0
             nullVector[attrName] = 0
-    for attr in attrs:
-        y = attr['Survived']
-        ycarpiX = {}
-        y2 = 0
-        for attrName in attr['attributes']:
-            y2 += w[attrName] * attr['attributes'][attrName]
-            ycarpiX[attrName] = -1 * y * attr['attributes'][attrName]
+            totaldLoss[attrName] = 0
+    for i in range(1000):
+        for attr in attrs:
+            y = attr['Survived']
+            ycarpiX = {}
+            y2 = 0
+            for attrName in attr['attributes']:
+                y2 += w[attrName] * attr['attributes'][attrName]
+                ycarpiX[attrName] = -1 * y * attr['attributes'][attrName]
+            dloss = sdF(y2, y, ycarpiX, nullVector)
+            for attrName in dloss:
+                totaldLoss[attrName] = totaldLoss[attrName] + dloss[attrName] / 750
+        for _ in attrs:
+            for attrName in totaldLoss:
+                w[attrName] = w[attrName] - 0.000001 * totaldLoss[attrName]
+        print(w['is female'])
+
+
+stocasticGradientDescent(dictToAttributes(trainDict), sdF)
