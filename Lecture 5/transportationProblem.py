@@ -80,6 +80,9 @@ def backtrackingSearch(problem):
     return [best['cost'], best['history']]
 
 
+# Mesela 9 da recursion duruyor 9 dan giden 2 yol var 2 yoldan birini cache e ekliyor sonra
+# Recursion istemeyen onceki value ya geciyor onun da en kisa yolunu cache e ekliyor.
+# Nereden geldigi onemli degil her turlu sonuca ayni sekilde ulasabilir.
 def dynamicProgramming(problem):
     cache = {}
     result2 = []
@@ -94,6 +97,7 @@ def dynamicProgramming(problem):
             result2.append(cost + futureCost(newState))
         result = min(result2)  # suan calismiyor burasi duzelt
         cache[state] = result
+        print('cache=', cache)
         return result
 
     return (futureCost(problem.startState()), [])
@@ -119,7 +123,7 @@ def printSolution(solution):
         print(item)
 
 
-problem = transportationProblem(N=10)
+problem = transportationProblem(N=100)
 printSolution(backtrackingSearch(problem))
 printSolution(dynamicProgramming(problem))
 printSolution(uniformCostSearch(problem))
