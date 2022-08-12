@@ -1,3 +1,4 @@
+import os
 import sys
 
 sys.setrecursionlimit(10000)
@@ -30,16 +31,59 @@ class TransportationMDP(object):
         if action == 'walk':
             result.append((state + 1, 1., -1.))
         if action == 'tram':
-            result.append((state * 2, 0.5, -2))
-            result.append((state, 0.5, -2))
+            result.append((state * 2, 0.1, -2))
+            result.append((state, 0.9, -2))
         return result
 
     def discount(self):
         return 1.
 
-    def state(self):
+    def states(self):
         return range(1, self.N + 1)
 
 
+# Inference (Algorithms)
+
+def valueIteration(mdp):
+    # initialize
+    V = {}  # state -> Vopt[state]
+
+    for state in mdp.states():
+        V[state] = 0
+
+    def Q(state, action):
+        return sum(prob * (reward + mdp.discount() * V[newState]) \
+                   for newState, prob, reward in mdp.succProbReward(state, action))
+
+    while True:
+        # compute the new values (newV) given the old values (V)
+        newV = {}
+        for state in mdp.states():
+            if mdp.isEnd(state):
+                newV[state] = 0.
+            else:
+                newV[state] = max(Q(state, action) for action in mdp.actions(state))
+        # check for convergence
+        if max(abs(V[state] - newV[state]) for state in mdp.states()) < 1e-10:
+            break
+        V = newV
+
+        # read out policy
+        pi = {}
+        for state in mdp.states():
+            if mdp.isEnd(state):
+                pi[state] = 'none'
+            else:
+                pi[state] = max((Q(state, action), action) for action in mdp.actions(state))[1]
+
+        os.system('cls')
+        print('{:15} {:15} {:15}'.format('s', 'V(s)', 'pi(s)'))
+        for state in mdp.states():
+            print('{:15} {:15} {:15}'.format(state, V[state], pi[state]))
+        input()
+
+
 mdp = TransportationMDP(N=10)
+valueIteration(mdp)
 print(mdp.actions(3))
+print(mdp.succProbReward(3, 'tram'))
