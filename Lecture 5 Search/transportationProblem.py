@@ -80,9 +80,8 @@ def backtrackingSearch(problem):
     return [best['cost'], best['history']]
 
 
-# Mesela 9 da recursion duruyor 9 dan giden 2 yol var 2 yoldan birini cache e ekliyor sonra
-# Recursion istemeyen onceki value ya geciyor onun da en kisa yolunu cache e ekliyor.
-# Nereden geldigi onemli degil her turlu sonuca ayni sekilde ulasabilir.
+# Recursion yapmayan bir futurecost oldugunda(9->8->7...) onun en kucuk dalini alip cache e ekler.
+# Ekledigi dallarin nerde oldugu onemli degil cunku ayni noktadan ayni sekilde ulasilabilir.
 def dynamicProgramming(problem):
     cache = {}
     result2 = []
